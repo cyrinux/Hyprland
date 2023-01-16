@@ -269,6 +269,7 @@ void CCompositor::cleanup() {
 
     m_pLastFocus  = nullptr;
     m_pLastWindow = nullptr;
+    m_pPreviousWindow = nullptr;
 
     // accumulate all PIDs for killing, also request closing.
     for (auto& w : m_vWindows) {
@@ -693,9 +694,9 @@ CWindow* CCompositor::windowFromCursor() {
     return nullptr;
 }
 
-CWindow* CCompositor::getUrgentWindowFromWorkspaceByID(const int& id) {
+CWindow* CCompositor::getUrgentWindow() {
     for (auto& w : m_vWindows) {
-        if (w->m_iWorkspaceID == id && w->m_bIsMapped && w->m_bIsUrgent)
+        if (w->m_bIsMapped && w->m_bIsUrgent)
             return w.get();
     }
 
@@ -1029,15 +1030,6 @@ bool CCompositor::isWorkspaceVisible(const int& w) {
 CWorkspace* CCompositor::getWorkspaceByID(const int& id) {
     for (auto& w : m_vWorkspaces) {
         if (w->m_iID == id)
-            return w.get();
-    }
-
-    return nullptr;
-}
-
-CWorkspace* CCompositor::getUrgentWorkspace() {
-    for (auto& w : m_vWorkspaces) {
-        if (hasUrgentWindowOnWorkspace(w->m_iID))
             return w.get();
     }
 

@@ -94,6 +94,7 @@ class CCompositor {
 
     wlr_surface*                              m_pLastFocus   = nullptr;
     CWindow*                                  m_pLastWindow  = nullptr;
+    CWindow*                                  m_pPreviousWindow  = nullptr;
     CMonitor*                                 m_pLastMonitor = nullptr;
 
     SSeat                                     m_sSeat;
@@ -176,8 +177,7 @@ class CCompositor {
     void           setActiveMonitor(CMonitor*);
     bool           isWorkspaceSpecial(const int&);
     int            getNewSpecialID();
-    CWorkspace*    getUrgentWorkspace();
-    CWindow*       getUrgentWindowFromWorkspaceByID(const int& id);
+    CWindow*       getUrgentWindow();
 
     std::string    explicitConfigPath;
 

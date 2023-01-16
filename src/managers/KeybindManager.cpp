@@ -48,7 +48,7 @@ CKeybindManager::CKeybindManager() {
     m_mDispatchers["pin"]                           = pinActive;
     m_mDispatchers["mouse"]                         = mouse;
     m_mDispatchers["bringactivetotop"]              = bringActiveToTop;
-    m_mDispatchers["focusurgentorlastwindow"]       = getUrgentOrLastWindow;
+    m_mDispatchers["focusurgentorlastwindow"]       = focusUrgentOrLastWindow;
 
     m_tScrollTimer.reset();
 }
@@ -638,37 +638,34 @@ void CKeybindManager::toggleActivePseudo(std::string args) {
         g_pLayoutManager->getCurrentLayout()->recalculateWindow(ACTIVEWINDOW);
 }
 
-void CKeybindManager::getUrgentOrLastWindow(std::string args) {
-    CWindow* PWINDOW = nullptr;
+void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
+    const auto ACTIVEWINDOW = g_pCompositor->m_pLastWindow;
+    if (!ACTIVEWINDOW)
+        return;
 
-    const auto WORKSPACEURGENT = g_pCompositor->getUrgentWorkspace();
-    if (WORKSPACEURGENT) {
-        PWINDOW = g_pCompositor->getUrgentWindowFromWorkspaceByID(WORKSPACEURGENT->m_iID);
-    } else {
-        Debug::log(ERR, "there is no urgent window, get last window instead");
-        PWINDOW = g_pCompositor->m_pLastWindow;
+    CWindow* PNEXTWINDOW = nullptr;
+
+    PNEXTWINDOW = g_pCompositor->getUrgentWindow();
+
+    if (!PNEXTWINDOW) {
+        PNEXTWINDOW = g_pCompositor->m_pPreviousWindow;
     }
 
-    if (!PWINDOW) {
-        Debug::log(ERR, "can't get last window, return");
+    if (!PNEXTWINDOW) {
         return;
     }
 
-    const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(PWINDOW->m_iWorkspaceID);
-    if (!PWORKSPACE)
-        return;
+    switchToWindow(ACTIVEWINDOW, PNEXTWINDOW);
 
-    if (PWORKSPACE->m_pWlrHandle)
-        wlr_ext_workspace_handle_v1_set_urgent(PWORKSPACE->m_pWlrHandle, 0);
+    if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
+        changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
 
-    if (PWINDOW->m_bIsFloating)
-        g_pCompositor->moveWindowToTop(PWINDOW);
+    // if (PNEXTWINDOW->m_bIsFloating)
+    //     g_pCompositor->moveWindowToTop(PNEXTWINDOW);
 
-    g_pCompositor->focusWindow(PWINDOW);
-    Vector2D middle = PWINDOW->m_vRealPosition.goalv() + PWINDOW->m_vRealSize.goalv() / 2.f;
-    g_pCompositor->warpCursorTo(middle);
-
-    return;
+    // g_pCompositor->focusWindow(PNEXTWINDOW);
+    // Vector2D middle = PNEXTWINDOW->m_vRealPosition.goalv() + PNEXTWINDOW->m_vRealSize.goalv() / 2.f;
+    // g_pCompositor->warpCursorTo(middle);
 }
 
 
@@ -698,7 +695,6 @@ void CKeybindManager::changeworkspace(std::string args) {
             return;
         } else {
             workspaceToChangeTo = PCURRENTWORKSPACE->m_iPrevWorkspaceID;
-
             if (const auto PWORKSPACETOCHANGETO = g_pCompositor->getWorkspaceByID(workspaceToChangeTo); PWORKSPACETOCHANGETO)
                 workspaceName = PWORKSPACETOCHANGETO->m_szName;
             else
@@ -822,6 +818,8 @@ void CKeybindManager::changeworkspace(std::string args) {
 
             g_pCompositor->focusWindow(PWINDOW, g_pXWaylandManager->getWindowSurface(PWINDOW));
 
+            g_pCompositor->m_pPreviousWindow = PWINDOW;
+
             if (g_pCompositor->cursorOnReservedArea()) // fix focus on bars etc
                 g_pInputManager->refocus();
         } else if (g_pCompositor->getWindowsOnWorkspace(PWORKSPACETOCHANGETO->m_iID) > 0)
@@ -830,6 +828,7 @@ void CKeybindManager::changeworkspace(std::string args) {
             // if there are no windows on the workspace, just unfocus the window on the previous workspace
             g_pCompositor->focusWindow(nullptr);
         }
+
 
         // set the new monitor as the last (no warps would bug otherwise)
         g_pCompositor->setActiveMonitor(g_pCompositor->getMonitorFromID(PWORKSPACETOCHANGETO->m_iMonitorID));
@@ -1080,23 +1079,9 @@ void CKeybindManager::moveActiveToWorkspaceSilent(std::string args) {
     g_pCompositor->focusWindow(PNEXTCANDIDATE);
 }
 
-void CKeybindManager::moveFocusTo(std::string args) {
-    char arg = args[0];
 
-    if (!isDirection(args)) {
-        Debug::log(ERR, "Cannot move focus in direction %c, unsupported direction. Supported: l,r,u/t,d/b", arg);
-        return;
-    }
+void CKeybindManager::switchToWindow(CWindow* PLASTWINDOW, CWindow* PWINDOWTOCHANGETO) {
 
-    const auto PLASTWINDOW = g_pCompositor->m_pLastWindow;
-
-    if (!PLASTWINDOW)
-        return;
-
-    // remove constraints
-    g_pInputManager->unconstrainMouse();
-
-    auto switchToWindow = [&](CWindow* PWINDOWTOCHANGETO) {
         if (PLASTWINDOW->m_iWorkspaceID == PWINDOWTOCHANGETO->m_iWorkspaceID && PLASTWINDOW->m_bIsFullscreen) {
             const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(PLASTWINDOW->m_iWorkspaceID);
             const auto FSMODE     = PWORKSPACE->m_efFullscreenMode;
@@ -1120,16 +1105,33 @@ void CKeybindManager::moveFocusTo(std::string args) {
                 g_pCompositor->setActiveMonitor(PNEWMON);
             }
         }
-    };
+}
+
+
+void CKeybindManager::moveFocusTo(std::string args) {
+    char arg = args[0];
+
+    if (!isDirection(args)) {
+        Debug::log(ERR, "Cannot move focus in direction %c, unsupported direction. Supported: l,r,u/t,d/b", arg);
+        return;
+    }
+
+    const auto PLASTWINDOW = g_pCompositor->m_pLastWindow;
+
+    if (!PLASTWINDOW)
+        return;
+
+    // remove constraints
+    g_pInputManager->unconstrainMouse();
 
     const auto PWINDOWTOCHANGETO = g_pCompositor->getWindowInDirection(PLASTWINDOW, arg);
 
     if (PWINDOWTOCHANGETO) {
-        switchToWindow(PWINDOWTOCHANGETO);
+        switchToWindow(PLASTWINDOW, PWINDOWTOCHANGETO);
     } else {
         const auto PWINDOWNEXT = g_pCompositor->getNextWindowOnWorkspace(PLASTWINDOW, true);
         if (PWINDOWNEXT) {
-            switchToWindow(PWINDOWNEXT);
+            switchToWindow(PLASTWINDOW, PWINDOWNEXT);
         }
     }
 }

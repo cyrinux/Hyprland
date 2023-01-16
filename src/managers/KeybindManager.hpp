@@ -128,7 +128,8 @@ class CKeybindManager {
     static void pinActive(std::string);
     static void mouse(std::string);
     static void bringActiveToTop(std::string);
-    static void getUrgentOrLastWindow(std::string);
+    static void focusUrgentOrLastWindow(std::string);
+    static void switchToWindow(CWindow*, CWindow*);
 
     friend class CCompositor;
     friend class CInputManager;

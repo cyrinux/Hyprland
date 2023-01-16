@@ -48,6 +48,7 @@ CKeybindManager::CKeybindManager() {
     m_mDispatchers["pin"]                           = pinActive;
     m_mDispatchers["mouse"]                         = mouse;
     m_mDispatchers["bringactivetotop"]              = bringActiveToTop;
+    m_mDispatchers["focusurgentorlastwindow"]       = getUrgentOrLastWindow;
 
     m_tScrollTimer.reset();
 }
@@ -636,6 +637,40 @@ void CKeybindManager::toggleActivePseudo(std::string args) {
     if (!ACTIVEWINDOW->m_bIsFullscreen)
         g_pLayoutManager->getCurrentLayout()->recalculateWindow(ACTIVEWINDOW);
 }
+
+void CKeybindManager::getUrgentOrLastWindow(std::string args) {
+    CWindow* PWINDOW = nullptr;
+
+    const auto WORKSPACEURGENT = g_pCompositor->getUrgentWorkspace();
+    if (WORKSPACEURGENT) {
+        PWINDOW = g_pCompositor->getUrgentWindowFromWorkspaceByID(WORKSPACEURGENT->m_iID);
+    } else {
+        Debug::log(ERR, "there is no urgent window, get last window instead");
+        PWINDOW = g_pCompositor->m_pLastWindow;
+    }
+
+    if (!PWINDOW) {
+        Debug::log(ERR, "can't get last window, return");
+        return;
+    }
+
+    const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(PWINDOW->m_iWorkspaceID);
+    if (!PWORKSPACE)
+        return;
+
+    if (PWORKSPACE->m_pWlrHandle)
+        wlr_ext_workspace_handle_v1_set_urgent(PWORKSPACE->m_pWlrHandle, 0);
+
+    if (PWINDOW->m_bIsFloating)
+        g_pCompositor->moveWindowToTop(PWINDOW);
+
+    g_pCompositor->focusWindow(PWINDOW);
+    Vector2D middle = PWINDOW->m_vRealPosition.goalv() + PWINDOW->m_vRealSize.goalv() / 2.f;
+    g_pCompositor->warpCursorTo(middle);
+
+    return;
+}
+
 
 void CKeybindManager::changeworkspace(std::string args) {
     int         workspaceToChangeTo = 0;

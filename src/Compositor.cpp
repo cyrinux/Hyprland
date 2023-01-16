@@ -693,6 +693,15 @@ CWindow* CCompositor::windowFromCursor() {
     return nullptr;
 }
 
+CWindow* CCompositor::getUrgentWindowFromWorkspaceByID(const int& id) {
+    for (auto& w : m_vWindows) {
+        if (w->m_iWorkspaceID == id && w->m_bIsMapped && w->m_bIsUrgent)
+            return w.get();
+    }
+
+    return nullptr;
+}
+
 CWindow* CCompositor::windowFloatingFromCursor() {
     for (auto w = m_vWindows.rbegin(); w != m_vWindows.rend(); w++) {
         wlr_box box = {(*w)->m_vRealPosition.vec().x, (*w)->m_vRealPosition.vec().y, (*w)->m_vRealSize.vec().x, (*w)->m_vRealSize.vec().y};
@@ -1020,6 +1029,15 @@ bool CCompositor::isWorkspaceVisible(const int& w) {
 CWorkspace* CCompositor::getWorkspaceByID(const int& id) {
     for (auto& w : m_vWorkspaces) {
         if (w->m_iID == id)
+            return w.get();
+    }
+
+    return nullptr;
+}
+
+CWorkspace* CCompositor::getUrgentWorkspace() {
+    for (auto& w : m_vWorkspaces) {
+        if (hasUrgentWindowOnWorkspace(w->m_iID))
             return w.get();
     }
 

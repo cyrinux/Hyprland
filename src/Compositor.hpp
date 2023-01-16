@@ -176,6 +176,8 @@ class CCompositor {
     void           setActiveMonitor(CMonitor*);
     bool           isWorkspaceSpecial(const int&);
     int            getNewSpecialID();
+    CWorkspace*    getUrgentWorkspace();
+    CWindow*       getUrgentWindowFromWorkspaceByID(const int& id);
 
     std::string    explicitConfigPath;
 

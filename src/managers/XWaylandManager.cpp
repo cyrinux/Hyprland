@@ -61,23 +61,14 @@ void CHyprXWaylandManager::activateWindow(CWindow* pWindow, bool activate) {
         wlr_xdg_toplevel_set_activated(pWindow->m_uSurface.xdg->toplevel, activate);
 
     if (activate) {
-        Debug::log(LOG, "BLA activate !");
         g_pCompositor->m_pLastFocus  = getWindowSurface(pWindow);
         if(g_pCompositor->m_pLastWindow) {
-            Debug::log(LOG, "BLA I got last window, set Previous window !");
             g_pCompositor->m_pPreviousWindow = g_pCompositor->m_pLastWindow;
         } else {
-            Debug::log(LOG, "BLA dont have last window, set previousWindow with pwindow");
             g_pCompositor->m_pPreviousWindow = pWindow;
         }
-        Debug::log(LOG, "BLA set lastWindow with pwindow");
         g_pCompositor->m_pLastWindow = pWindow;
     }
-    // Debug::log(LOG, "BLA pWindow is mapped?: %s", pWindow->m_bIsMapped);
-    // Debug::log(LOG, "BLA Last: %s", g_pCompositor->m_pLastWindow);
-    // Debug::log(LOG, "BLA Previous: %s", g_pCompositor->m_pPreviousWindow);
-    // Debug::log(LOG, "BLA LastWORKSPACE: %s", g_pCompositor->m_pLastWindow->m_iWorkspaceID);
-    // Debug::log(LOG, "BLA PreviousWORKSPACE: %s", g_pCompositor->m_pPreviousWindow->m_iWorkspaceID);
 
     if (!pWindow->m_bPinned)
         g_pCompositor->getWorkspaceByID(pWindow->m_iWorkspaceID)->m_pLastFocusedWindow = pWindow;

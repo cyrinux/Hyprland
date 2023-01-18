@@ -640,8 +640,6 @@ void CKeybindManager::toggleActivePseudo(std::string args) {
 
 void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
     const auto ACTIVEWINDOW = g_pCompositor->m_pLastWindow;
-    if (!ACTIVEWINDOW)
-        return;
 
     CWindow* PNEXTWINDOW = nullptr;
 
@@ -655,8 +653,8 @@ void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
         return;
     }
 
-    // if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
-    changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
+    if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
+        changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
 
     switchToWindow(PNEXTWINDOW);
 

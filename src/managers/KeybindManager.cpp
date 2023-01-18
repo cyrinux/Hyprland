@@ -655,10 +655,11 @@ void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
         return;
     }
 
+    // if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
+    changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
+
     switchToWindow(PNEXTWINDOW);
 
-    if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
-        changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
 }
 
 

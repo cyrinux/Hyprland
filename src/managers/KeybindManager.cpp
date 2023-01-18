@@ -1083,6 +1083,7 @@ void CKeybindManager::moveActiveToWorkspaceSilent(std::string args) {
 void CKeybindManager::switchToWindow(CWindow* PLASTWINDOW, CWindow* PWINDOWTOCHANGETO) {
 
         if (PLASTWINDOW->m_iWorkspaceID == PWINDOWTOCHANGETO->m_iWorkspaceID && PLASTWINDOW->m_bIsFullscreen) {
+            Debug::log(LOG, "BLA switchToWindow 1");
             const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(PLASTWINDOW->m_iWorkspaceID);
             const auto FSMODE     = PWORKSPACE->m_efFullscreenMode;
 
@@ -1094,6 +1095,7 @@ void CKeybindManager::switchToWindow(CWindow* PLASTWINDOW, CWindow* PWINDOWTOCHA
             if (!PWINDOWTOCHANGETO->m_bPinned)
                 g_pCompositor->setWindowFullscreen(PWINDOWTOCHANGETO, true, FSMODE);
         } else {
+            Debug::log(LOG, "BLA switchToWindow 2");
             g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
             Vector2D middle = PWINDOWTOCHANGETO->m_vRealPosition.goalv() + PWINDOWTOCHANGETO->m_vRealSize.goalv() / 2.f;
             g_pCompositor->warpCursorTo(middle);

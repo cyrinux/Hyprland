@@ -1089,7 +1089,7 @@ void CKeybindManager::switchToWindow(CWindow* PLASTWINDOW, CWindow* PWINDOWTOCHA
             if (!PWINDOWTOCHANGETO->m_bPinned)
                 g_pCompositor->setWindowFullscreen(PLASTWINDOW, false, FULLSCREEN_FULL);
 
-            g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
+            g_pCompositor->focusWindow(PLASTWINDOW);
 
             if (!PWINDOWTOCHANGETO->m_bPinned)
                 g_pCompositor->setWindowFullscreen(PWINDOWTOCHANGETO, true, FSMODE);

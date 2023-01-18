@@ -655,7 +655,7 @@ void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
         return;
     }
 
-    switchToWindow(ACTIVEWINDOW, PNEXTWINDOW);
+    switchToWindow(PNEXTWINDOW);
 
     if (ACTIVEWINDOW->m_iWorkspaceID != PNEXTWINDOW->m_iWorkspaceID)
         changeworkspace("[internal]" + std::to_string(PNEXTWINDOW->m_iWorkspaceID));
@@ -1141,11 +1141,11 @@ void CKeybindManager::moveFocusTo(std::string args) {
     const auto PWINDOWTOCHANGETO = g_pCompositor->getWindowInDirection(PLASTWINDOW, arg);
 
     if (PWINDOWTOCHANGETO) {
-        switchToWindow(PLASTWINDOW, PWINDOWTOCHANGETO);
+        switchToWindow(PWINDOWTOCHANGETO);
     } else {
         const auto PWINDOWNEXT = g_pCompositor->getNextWindowOnWorkspace(PLASTWINDOW, true);
         if (PWINDOWNEXT) {
-            switchToWindow(PLASTWINDOW, PWINDOWNEXT);
+            switchToWindow(PWINDOWNEXT);
         }
     }
 }

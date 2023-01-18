@@ -60,7 +60,6 @@ void CHyprXWaylandManager::activateWindow(CWindow* pWindow, bool activate) {
     } else
         wlr_xdg_toplevel_set_activated(pWindow->m_uSurface.xdg->toplevel, activate);
 
-    Debug::log(LOG, "BLA pWindow is mapped?: %s", pWindow->m_bIsMapped);
     if (activate) {
         g_pCompositor->m_pLastFocus  = getWindowSurface(pWindow);
         if(g_pCompositor->m_pLastWindow) {
@@ -70,8 +69,9 @@ void CHyprXWaylandManager::activateWindow(CWindow* pWindow, bool activate) {
         }
         g_pCompositor->m_pLastWindow = pWindow;
     }
-    Debug::log(LOG, "BLA Last: %s", g_pCompositor->m_pLastWindow);
-    Debug::log(LOG, "BLA Previous: %s", g_pCompositor->m_pPreviousWindow);
+    // Debug::log(LOG, "BLA pWindow is mapped?: %s", pWindow->m_bIsMapped);
+    // Debug::log(LOG, "BLA Last: %s", g_pCompositor->m_pLastWindow);
+    // Debug::log(LOG, "BLA Previous: %s", g_pCompositor->m_pPreviousWindow);
     // Debug::log(LOG, "BLA LastWORKSPACE: %s", g_pCompositor->m_pLastWindow->m_iWorkspaceID);
     // Debug::log(LOG, "BLA PreviousWORKSPACE: %s", g_pCompositor->m_pPreviousWindow->m_iWorkspaceID);
 

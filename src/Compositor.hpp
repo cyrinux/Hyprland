@@ -94,8 +94,8 @@ class CCompositor {
 
     wlr_surface*                              m_pLastFocus   = nullptr;
     CWindow*                                  m_pLastWindow  = nullptr;
-    CWindow*                                  m_pPrevWindow  = nullptr;
     CMonitor*                                 m_pLastMonitor = nullptr;
+    CWindow*                                  m_pPrevWindow  = nullptr;
 
     SSeat                                     m_sSeat;
 

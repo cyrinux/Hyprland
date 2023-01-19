@@ -1101,10 +1101,11 @@ void CKeybindManager::moveFocusTo(std::string args) {
 }
 
 void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
-    auto PWINDOWTOCHANGETO = g_pCompositor->getUrgentWindow();
-    if (!PWINDOWTOCHANGETO)
-        PWINDOWTOCHANGETO = g_pCompositor->m_pPrevWindow;
-    if (!PWINDOWTOCHANGETO)
+    const auto PWINDOWURGENT = g_pCompositor->getUrgentWindow();
+    const auto PWINDOWPREV = g_pCompositor->m_pPrevWindow;
+    const auto PWINDOWLAST = g_pCompositor->m_pLastWindow;
+
+    if (!PWINDOWURGENT && !PWINDOWPREV)
         return;
 
     // remove constraints
@@ -1132,7 +1133,15 @@ void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
         }
     };
 
-    switchToWindow(PWINDOWTOCHANGETO);
+    if (PWINDOWURGENT) {
+        switchToWindow(PWINDOWURGENT);
+    } else {
+        if (PWINDOWLAST && PWINDOWPREV->m_iWorkspaceID == PWINDOWLAST->m_iWorkspaceID) {
+            switchToWindow(PWINDOWPREV);
+        } else {
+            changeworkspace("previous");
+        }
+    }
 }
 
 void CKeybindManager::moveActiveTo(std::string args) {

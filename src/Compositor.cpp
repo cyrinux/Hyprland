@@ -797,6 +797,11 @@ void CCompositor::focusWindow(CWindow* pWindow, wlr_surface* pSurface) {
     if (pWindow->m_bPinned)
         pWindow->m_iWorkspaceID = m_pLastMonitor->activeWorkspace;
 
+    // Save the previously focused window before workspace change,
+    // as a workspace change focuses a window that was last focused there,
+    // and we don't want it to be remembered in the history.
+    const auto PPREVWINDOW = m_pLastWindow;
+
     if (!isWorkspaceVisible(pWindow->m_iWorkspaceID))
         g_pKeybindManager->changeworkspace("[internal]" + std::to_string(pWindow->m_iWorkspaceID));
 
@@ -808,8 +813,7 @@ void CCompositor::focusWindow(CWindow* pWindow, wlr_surface* pSurface) {
         updateWindowAnimatedDecorationValues(PLASTWINDOW);
 
         if (!pWindow->m_bIsX11 || pWindow->m_iX11Type == 1) {
-            if (PLASTWINDOW != pWindow)
-                m_pPrevWindow = PLASTWINDOW;
+            m_pPrevWindow = PPREVWINDOW;
             g_pXWaylandManager->activateWindow(PLASTWINDOW, false);
         }
 

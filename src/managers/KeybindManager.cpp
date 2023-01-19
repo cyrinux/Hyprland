@@ -1102,38 +1102,37 @@ void CKeybindManager::moveFocusTo(std::string args) {
 
 void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
     auto PWINDOWTOCHANGETO = g_pCompositor->getUrgentWindow();
-    if (!PWINDOWTOCHANGETO) {
-         auto PWINDOWTOCHANGETO = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastWindow->m_iWorkspaceID)->m_iPrevWorkspaceID->m_pLastWindow;
-    }
-    if (!PWINDOWTOCHANGETO)
-        return;
-
     // remove constraints
     g_pInputManager->unconstrainMouse();
+    if (PWINDOWTOCHANGETO) {
+        auto switchToWindow = [&](CWindow* PWINDOWTOCHANGETO) {
+            if (PWINDOWTOCHANGETO == g_pCompositor->m_pLastWindow || !PWINDOWTOCHANGETO)
+                return;
 
-    auto switchToWindow = [&](CWindow* PWINDOWTOCHANGETO) {
-        if (PWINDOWTOCHANGETO == g_pCompositor->m_pLastWindow || !PWINDOWTOCHANGETO)
-            return;
+            if (g_pCompositor->m_pLastWindow && g_pCompositor->m_pLastWindow->m_iWorkspaceID == PWINDOWTOCHANGETO->m_iWorkspaceID && g_pCompositor->m_pLastWindow->m_bIsFullscreen) {
+                const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastWindow->m_iWorkspaceID);
+                const auto FSMODE     = PWORKSPACE->m_efFullscreenMode;
 
-        if (g_pCompositor->m_pLastWindow && g_pCompositor->m_pLastWindow->m_iWorkspaceID == PWINDOWTOCHANGETO->m_iWorkspaceID && g_pCompositor->m_pLastWindow->m_bIsFullscreen) {
-            const auto PWORKSPACE = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastWindow->m_iWorkspaceID);
-            const auto FSMODE     = PWORKSPACE->m_efFullscreenMode;
+                if (!PWINDOWTOCHANGETO->m_bPinned)
+                    g_pCompositor->setWindowFullscreen(g_pCompositor->m_pLastWindow, false, FULLSCREEN_FULL);
 
-            if (!PWINDOWTOCHANGETO->m_bPinned)
-                g_pCompositor->setWindowFullscreen(g_pCompositor->m_pLastWindow, false, FULLSCREEN_FULL);
+                g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
 
-            g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
+                if (!PWINDOWTOCHANGETO->m_bPinned)
+                    g_pCompositor->setWindowFullscreen(PWINDOWTOCHANGETO, true, FSMODE);
+            } else {
+                g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
+                Vector2D middle = PWINDOWTOCHANGETO->m_vRealPosition.goalv() + PWINDOWTOCHANGETO->m_vRealSize.goalv() / 2.f;
+                g_pCompositor->warpCursorTo(middle);
+            }
+        };
 
-            if (!PWINDOWTOCHANGETO->m_bPinned)
-                g_pCompositor->setWindowFullscreen(PWINDOWTOCHANGETO, true, FSMODE);
-        } else {
-            g_pCompositor->focusWindow(PWINDOWTOCHANGETO);
-            Vector2D middle = PWINDOWTOCHANGETO->m_vRealPosition.goalv() + PWINDOWTOCHANGETO->m_vRealSize.goalv() / 2.f;
-            g_pCompositor->warpCursorTo(middle);
-        }
-    };
-
-    switchToWindow(PWINDOWTOCHANGETO);
+        switchToWindow(PWINDOWTOCHANGETO);
+    } else {
+        const auto PCURRENTWORKSPACE = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastMonitor->activeWorkspace);
+        const auto PPREVWORKSPACE = g_pCompositor->getWorkspaceByID(PCURRENTWORKSPACE->m_iPrevWorkspaceID);
+        if (PCURRENTWORKSPACE != PPREVWORKSPACE) changeworkspace("prev");
+    }
 }
 
 void CKeybindManager::moveActiveTo(std::string args) {

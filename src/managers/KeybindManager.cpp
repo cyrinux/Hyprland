@@ -1102,8 +1102,9 @@ void CKeybindManager::moveFocusTo(std::string args) {
 
 void CKeybindManager::focusUrgentOrLastWindow(std::string args) {
     auto PWINDOWTOCHANGETO = g_pCompositor->getUrgentWindow();
-    if (!PWINDOWTOCHANGETO)
-        PWINDOWTOCHANGETO = g_pCompositor->m_pPrevWindow;
+    if (!PWINDOWTOCHANGETO) {
+         auto PWINDOWTOCHANGETO = g_pCompositor->getWorkspaceByID(g_pCompositor->m_pLastWindow->m_iWorkspaceID)->m_iPrevWorkspaceID->m_pLastWindow;
+    }
     if (!PWINDOWTOCHANGETO)
         return;
 

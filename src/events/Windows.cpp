@@ -733,7 +733,6 @@ void Events::listener_unmapWindow(void* owner, void* data) {
     // update lastwindow after focus
     PWINDOW->onUnmap();
 
-    EMIT_HOOK_EVENT("closeWindow", PWINDOW);
 }
 
 void Events::listener_commitWindow(void* owner, void* data) {
@@ -804,6 +803,8 @@ void Events::listener_destroyWindow(void* owner, void* data) {
         g_pCompositor->removeWindowFromVectorSafe(PWINDOW); // most likely X11 unmanaged or sumn
         Debug::log(LOG, "Unmapped window %lx removed instantly", PWINDOW);
     }
+
+    EMIT_HOOK_EVENT("closeWindow", PWINDOW);
 }
 
 void Events::listener_setTitleWindow(void* owner, void* data) {

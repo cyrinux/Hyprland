@@ -617,7 +617,6 @@ void Events::listener_unmapWindow(void* owner, void* data) {
     }
 
     g_pEventManager->postEvent(SHyprIPCEvent{"closewindow", getFormat("%lx", PWINDOW)});
-    EMIT_HOOK_EVENT("closeWindow", PWINDOW);
 
     g_pProtocolManager->m_pToplevelExportProtocolManager->onWindowUnmap(PWINDOW);
 
@@ -733,6 +732,8 @@ void Events::listener_unmapWindow(void* owner, void* data) {
 
     // update lastwindow after focus
     PWINDOW->onUnmap();
+
+    EMIT_HOOK_EVENT("closeWindow", PWINDOW);
 }
 
 void Events::listener_commitWindow(void* owner, void* data) {
